@@ -160,6 +160,10 @@ body,html{
     font-size: 18px;
     font-weight: 700;
 }
+.page-subtitle {
+    font-size: 12px;
+    font-weight: 500;
+}
 
 .page-bioline {
     font-size: 16px;
