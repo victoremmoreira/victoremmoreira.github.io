@@ -16,16 +16,37 @@ Requisitos:
 #>
 
 param(
-    [string]$Input = "images\profile-original.jpg",
-    [switch]$Force
+  [string]$Source = "profile-original.jpg",
+  [switch]$Force
 )
+
+# Diretório onde este script está localizado (garante caminhos corretos se chamado a partir de outra pasta)
+$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
+
+# Se o caminho de source não for absoluto, tente resolver em relação ao diretório do script
+if (-not [System.IO.Path]::IsPathRooted($Source)) {
+  # Tenta localizar apenas pelo nome do arquivo no diretório do script
+  $leaf = Split-Path -Leaf $Source
+  $possible = Join-Path $ScriptDir $leaf
+  if (Test-Path $possible) {
+    $InputPath = $possible
+  } else {
+    # fallback: caminho relativo ao script
+    $InputPath = Join-Path $ScriptDir $Source
+  }
+} else {
+  $InputPath = $Source
+}
+
+Write-Host "[info] Script dir: $ScriptDir"
+Write-Host "[info] Source argument resolved to: $InputPath"
 
 function Write-Info($msg){ Write-Host "[info] $msg" -ForegroundColor Cyan }
 function Write-ErrorAndExit($msg){ Write-Host "[error] $msg" -ForegroundColor Red; exit 1 }
 
 # Verifica input
-if (-not (Test-Path $Input)) {
-    Write-ErrorAndExit "Arquivo de entrada não encontrado: $Input`nColoque a foto original (a que você me enviou) em 'images\\profile-original.jpg' ou passe -Input 'caminho'"
+if (-not (Test-Path $InputPath)) {
+  Write-ErrorAndExit "Arquivo de entrada não encontrado: $InputPath`nColoque a foto original (a que você me enviou) em '$InputPath' ou passe -Source 'caminho'"
 }
 
 # Verifica magick
@@ -38,38 +59,48 @@ if (-not $magick) {
 $dir = Split-Path -Parent $Input
 if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir | Out-Null }
 
-# Define saídas
-$out144jpg = "images\profile-144.jpg"
-$out288jpg = "images\profile-288.jpg"
-$out144webp = "images\profile-144.webp"
-$out288webp = "images\profile-288.webp"
+# Define saídas (paths absolutos relativos ao diretório do script)
+$out144jpg = Join-Path $ScriptDir "profile-144.jpg"
+$out288jpg = Join-Path $ScriptDir "profile-288.jpg"
+$out144webp = Join-Path $ScriptDir "profile-144.webp"
+$out288webp = Join-Path $ScriptDir "profile-288.webp"
 
 # Função para rodar magick com checagem
-function Run-Magick($args, $outFile) {
-    if ((Test-Path $outFile) -and (-not $Force)) {
-        $resp = Read-Host "Arquivo $outFile já existe. Substituir? (S/N)"
-        if ($resp -ne 'S' -and $resp -ne 's') { Write-Info "Pular: $outFile"; return }
-    }
-    Write-Info "Gerando $outFile"
-    $cmd = "magick convert `"$Input`" $args `"$outFile`""
-    Write-Info $cmd
-    & magick convert $Input $args $outFile
-    if ($LASTEXITCODE -ne 0) { Write-ErrorAndExit "Falha ao gerar $outFile" }
+function Run-Magick($resize, $quality, $outFile) {
+  if ((Test-Path $outFile) -and (-not $Force)) {
+    $resp = Read-Host "Arquivo $outFile já existe. Substituir? (S/N)"
+    if ($resp -ne 'S' -and $resp -ne 's') { Write-Info "Pular: $outFile"; return }
+  }
+  Write-Info "Gerando $outFile"
+  # Chamar magick passando cada argumento separadamente para evitar problemas de parsing
+  # Usa a sintaxe: magick convert <input> -resize 288x288> -quality 85 <output>
+  # Chamar magick diretamente (IM v7) sem subcomando 'convert' para evitar avisos
+  $argsList = @($InputPath, '-resize', $resize, '-quality', $quality, $outFile)
+  Write-Info ("Running: magick " + ($argsList -join ' '))
+  & magick @argsList
+  if ($LASTEXITCODE -ne 0) { Write-ErrorAndExit "Falha ao gerar $outFile" }
 }
 
+
+
 # Gera JPG 288
-Run-Magick "-resize 288x288^> -quality 85" $out288jpg
+Run-Magick '288x288>' 85 $out288jpg
 
 # Gera JPG 144
-Run-Magick "-resize 144x144^> -quality 85" $out144jpg
+Run-Magick '144x144>' 85 $out144jpg
 
 # Gera WebP 288
-Run-Magick "-resize 288x288^> -quality 80" $out288webp
+Run-Magick '288x288>' 80 $out288webp
 
 # Gera WebP 144
-Run-Magick "-resize 144x144^> -quality 80" $out144webp
+Run-Magick '144x144>' 80 $out144webp
 
 Write-Info "Concluído. Arquivos gerados (ou existentes):"
-Get-Item $out144jpg,$out288jpg,$out144webp,$out288webp | ForEach-Object { Write-Host " - $($_.FullName) ($([math]::Round($_.Length/1024,1)) KB)" }
+$generated = @($out144jpg,$out288jpg,$out144webp,$out288webp) | Where-Object { Test-Path $_ }
+if ($generated.Count -eq 0) {
+  Write-Host "Nenhum arquivo gerado encontrado. Verifique mensagens acima." -ForegroundColor Yellow
+} else {
+  $generated | ForEach-Object { $f = Get-Item $_; Write-Host " - $($f.FullName) ($([math]::Round($f.Length/1024,1)) KB)" }
+}
 
 Write-Host "\nDica: abra index.html e, se desejado, descomente a linha de preload para melhorar LCP." -ForegroundColor Green

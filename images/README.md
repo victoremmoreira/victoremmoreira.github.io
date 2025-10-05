@@ -5,6 +5,9 @@ Instruções rápidas
 1) Salve a foto original (a que você me enviou) como:
    - profile-original.jpg
 
+   Adicionalmente, para o botão "Integrative Model of Player Classifications" adicione a capa da publicação com o nome:
+      - datjournal-cover.jpg
+
 2) Gere as versões recomendadas usando ImageMagick (instale em https://imagemagick.org):
 
    Abra o PowerShell e rode:
