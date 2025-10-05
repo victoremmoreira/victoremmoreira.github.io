@@ -1,86 +1,403 @@
 <!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <link href="assets/css/style.css" rel="stylesheet">
-        <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0'>
-        <link rel="shortcut icon" href="assets/images/favicon.png" type="image/webp">
-        <link rel="apple-touch-icon" sizes="180x180" href="images/favicon.png">
-        <link rel="icon" href="assets/images/favicon.png" type="image/webp">
-        <title>Victor Moreira - Linktree</title>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
-    </head>
-    <body>
-        <!-- Snowfall Background Animation -->
-         
-        <section class="animated-background">
-            <div id="stars1"></div>
-            <div id="stars2"></div>
-            <div id="stars3"></div>
-        </section>
-        <!-- End of Snowfall Background Animation -->
-
-        <div class="min-h-full flex-h-center" id="background_div">
-            <input type="hidden" value="https://bio.link" id="app-url">
-                <input type="hidden" value="null" id="is-featured">
-                    <canvas id="bg-canvas" class="background-overlay"></canvas>
-                </input>
-            </input>
-
-            <div class="mt-48 page-full-wrap relative ">
-                <input type="hidden" value="creator-page" id="page-type">
-                <img class="display-image m-auto" data-src="assets/images/logo.png" src="assets/images/logo.png" alt="[Your photo alt]"/>
-                <h2 class="page-title page-text-color page-text-font mt-16 text-center">Victor Moreira</h2>
-                <h4 class="page-subtitle page-text-color page-text-font mt-16 text-center">Link Treee</h4>
-                   
-                <div class="mt-24">
-
-                    <!--Link 1-->
-                    <div class="page-item-wrap relative">
-                        <div class="page-item flex-both-center absolute"></div>
-                        <a target="_blank"  class="page-item-each py-10 flex-both-center" href="https://www.linkedin.com/in/victoremmoreira/" data-id="261652" data-type="page_item">
-                            <img class="link-each-image" data-src="assets/images/linkedin.png" src="assets/images/linkedin.png" alt="LinkedIn @victoremmoreira"/>
-                            <span class=" item-title text-center">LinkedIn @victoremmoreira</span>
-                        </a>
-                    </div>   
-
-                    <!--Link 2-->     
-                    <div class="page-item-wrap relative">
-                        <div class="page-item flex-both-center absolute"></div>
-                        <a target="_blank"  class="page-item-each py-10 flex-both-center" href="https://www.instagram.com/victoremmoreira/" data-id="261685" data-type="page_item">
-                            <img class="link-each-image" data-src="assets/images/instagram.png" src="assets/images/instagram.png" alt="Instagram @victoremmoreira"/>
-                            <span class=" item-title text-center">Instagram @victoremmoreira</span>
-                        </a>
-                    </div>
-
-                    <!--Link 3--> 
-                    <div class="page-item-wrap relative">
-                        <div class="page-item flex-both-center absolute"></div>
-                        <a target="_blank"  class="page-item-each py-10 flex-both-center" href="https://www.facebook.com/victoremmoreira" data-id="261685" data-type="page_item">
-                            <img class="link-each-image" data-src="assets/images/facebook.png" src="assets/images/facebook.png" alt="Facebook @victoremmoreira"/>
-                            <span class=" item-title text-center">Facebook @victoremmoreira</span>
-                        </a>
-                    </div>  
-                    
-                    <!--Link 4--> 
-                    <div class="page-item-wrap relative">
-                        <div class="page-item flex-both-center absolute"></div>
-                        <a target="_blank"  class="page-item-each py-10 flex-both-center" href="http://lattes.cnpq.br/4253795392432161" data-id="261686" data-type="page_item">
-                            <img class="link-each-image" data-src="assets/images/lattes.png" src="assets/images/lattes.png" alt="Lattes"/>
-                            <span class=" item-title text-center">Lattes</span>
-                        </a>
-                    </div> 
-               
-                </div>                                                                                
-            </div>
-        </div>
+<html lang="pt-BR">
+<head>
+    <!-- Configuração básica do documento -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu Linktree Pessoal</title>
+    <!-- Carregando o CDN do Tailwind CSS para estilização moderna e responsiva -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Carregando Font Awesome para ícones de redes sociais (Versão 6) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLMDJ8g0p16s59zLwzN7v57P5z9v5e2j9F4t82o1b1234567890abcdef" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        /* Estilos para o Fundo de Estrelas */
+        @keyframes twinkle {
+            /* Ajustado para um brilho mais perceptível */
+            0%, 100% { opacity: 0.6; } 
+            50% { opacity: 1; } /* Opacidade total no meio do ciclo */
+        }
         
+        /* Container fixo para o fundo de estrelas */
+        .stars-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0; 
+            background-color: transparent;
+        }
+
+        /* Geração das Estrelas usando pseudo-elementos e box-shadow trick */
+        .stars-container::before,
+        .stars-container::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            /* Tamanho grande para cobrir bem o fundo e dar espaço para a sombra */
+            width: 2000px; 
+            height: 2000px; 
+            background: transparent;
+        }
+
+        /* Estrelas menores e mais numerosas (primeira camada) */
+        .stars-container::before {
+            /* Múltiplos pontos de luz simulando estrelas (box-shadow) */
+            box-shadow: 
+                0px 0px 0 #FFF, 100px 30px #FFF, 200px 80px #FFF, 350px 120px #FFF, 400px 200px #FFF, 50px 300px #FFF, 
+                150px 450px #FFF, 250px 520px #FFF, 450px 600px #FFF, 50px 750px #FFF, 300px 850px #FFF,
+                500px 100px #FFF, 10px 400px #FFF, 300px 700px #FFF, 450px 50px #FFF, 200px 250px #FFF,
+                400px 480px #FFF, 150px 650px #FFF, 50px 900px #FFF, 480px 350px #FFF, 280px 150px #FFF,
+                60px 500px #FFF, 380px 220px #FFF, 250px 950px #FFF, 420px 800px #FFF, 120px 700px #FFF,
+                700px 100px #FFF, 800px 300px #FFF, 950px 50px #FFF, 1000px 180px #FFF, 1100px 400px #FFF,
+                1250px 600px #FFF, 1300px 850px #FFF, 1450px 100px #FFF, 1600px 300px #FFF, 1750px 500px #FFF,
+                1800px 700px #FFF, 1900px 900px #FFF, 200px 1050px #FFF, 400px 1250px #FFF, 600px 1450px #FFF,
+                800px 1650px #FFF, 1000px 1850px #FFF, 1200px 50px #FFF, 1400px 250px #FFF, 1600px 450px #FFF,
+                1800px 650px #FFF, 50px 1200px #FFF, 250px 1400px #FFF, 450px 1600px #FFF, 650px 1800px #FFF,
+                1850px 1500px #FFF, 1650px 1300px #FFF, 1450px 1100px #FFF, 1250px 900px #FFF, 1050px 700px #FFF,
+                850px 500px #FFF, 650px 300px #FFF, 450px 100px #FFF, 250px 800px #FFF, 50px 600px #FFF; 
+            
+            /* Animação de Brilho sutil */
+            animation: twinkle 5s linear infinite;
+        }
+
+        /* Estrelas maiores e mais esparsas (segunda camada) */
+        .stars-container::after {
+            box-shadow: 
+                50px 150px 0 1px #FFF, 250px 350px 0 1px #FFF, 450px 550px 0 1px #FFF, 650px 750px 0 1px #FFF, 
+                850px 950px 0 1px #FFF, 1050px 1150px 0 1px #FFF, 1250px 1350px 0 1px #FFF, 1450px 1550px 0 1px #FFF, 
+                1650px 1750px 0 1px #FFF, 1850px 1950px 0 1px #FFF, 500px 50px 0 1px #FFF, 1500px 350px 0 1px #FFF, 
+                100px 1000px 0 1px #FFF, 1200px 1200px 0 1px #FFF, 300px 1600px 0 1px #FFF, 1500px 500px 0 1px #FFF,
+                700px 1800px 0 1px #FFF, 1900px 100px 0 1px #FFF, 900px 1400px 0 1px #FFF, 1100px 600px 0 1px #FFF;
+            
+            /* Animação com duração e delay diferentes para variação visual */
+            animation: twinkle 8s linear infinite;
+            animation-delay: 2s;
+        }
         
+        /* Define a fonte Inter como padrão e garante que a cor de fundo preencha a tela */
+        body {
+            font-family: 'Inter', sans-serif;
+            /* Fundo preto sólido para o efeito de céu noturno (Corrigido) */
+            background-color: #000000; 
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Alinha no topo */
+            padding-top: 40px;
+            overflow-x: hidden; /* Evita barra de rolagem horizontal */
+        }
 
-    </body>
+        /* Estilos específicos para o container principal */
+        #linktree-container {
+            position: relative; /* Garante que o conteúdo fique acima das estrelas (z-index: 10) */
+            z-index: 10;
+            max-width: 500px; /* Largura máxima para desktop/tablet */
+            width: 90%; /* Ocupa 90% da largura em telas menores */
+            margin-bottom: 40px;
+        }
 
+        /* Base para todos os botões de link */
+        .link-button {
+            transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+            border: 2px solid white; 
+            padding: 1rem; /* p-4 */
+            font-weight: 600; /* font-semibold */
+            border-radius: 0.75rem; /* rounded-xl */
+        }
+        
+        /* Efeito de hover geral (usado como base para os botões Padrão/Social) */
+        .link-button:not(.link-titulo-especial):hover, 
+        .link-button:not(.link-titulo-especial):focus {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+            opacity: 0.9;
+        }
+
+        /* ---------------------------------------------------------------------- */
+        /* 1. Botão de Link Título Padrão (Base: Preto/Branco) */
+        /* Efeito já coberto pelo .link-button base (bg-black text-white) */
+        
+        /* 2. Botão de Rede Social (Cor de marca diferente) */
+        .link-redesocial {
+            background-color: #383838; /* Um cinza escuro para diferenciar de links padrões */
+            border-color: #383838;
+        }
+        .link-redesocial:hover {
+            background-color: #4a4a4a;
+        }
+
+        /* 3. Botão de Link Título Grande (Destaque intermediário) */
+        .link-titulo-grande {
+            background-color: #0088ff; /* Cor azul clara para destaque */
+            border-color: #0088ff;
+            color: white;
+            font-size: 1.125rem; /* text-lg */
+        }
+        .link-titulo-grande:hover {
+            background-color: #0077ee;
+        }
+
+        /* 4. Botão de Link Título Destaque (Destaque forte) */
+        .link-titulo-destaque {
+            background-color: #34d399; /* Cor verde vibrante */
+            border-color: #34d399;
+            color: #1a1a1a; /* Texto escuro */
+            font-size: 1.25rem; /* text-xl */
+            padding: 1.25rem; /* Mais preenchimento */
+        }
+        .link-titulo-destaque:hover {
+            background-color: #10b981;
+            box-shadow: 0 10px 30px rgba(52, 211, 153, 0.5); /* Sombra mais colorida */
+        }
+
+        /* 5. e 6. Estrutura para Links com Foto (acima do texto) */
+        .link-com-foto {
+            display: flex;
+            flex-direction: column; /* Coloca a imagem acima do texto */
+            padding: 0.75rem 1rem;
+            height: auto; /* Altura flexível */
+        }
+        .link-com-foto img {
+            width: 90%;
+            max-width: 350px; /* Aumentei um pouco para a imagem do artigo */
+            height: auto;
+            border-radius: 0.5rem; /* rounded-lg */
+            margin-bottom: 0.75rem;
+            object-fit: cover;
+            border: 2px solid white;
+        }
+        .link-com-foto span {
+            font-size: 1.125rem; /* text-lg */
+        }
+        
+        /* 6. Botão de Link Título Especial (Brilho e Movimento) */
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 8px #ff00ff, 0 0 16px #ff00ff; }
+            50% { box-shadow: 0 0 16px #ff00ff, 0 0 32px #ff00ff; }
+        }
+
+        .link-titulo-especial {
+            background-color: #111111;
+            border-color: #ff00ff; /* Borda magenta */
+            color: #ff00ff;
+            animation: pulse-glow 3s infinite alternate; /* Aplica o brilho */
+            transform: scale(1);
+            font-size: 1.25rem; /* text-xl */
+        }
+        .link-titulo-especial:hover {
+            transform: scale(1.02); /* Leve movimento no hover */
+            opacity: 1; /* Mantém a opacidade total */
+        }
+
+        /* Estilo para a imagem de perfil */
+        .profile-image {
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+        }
+    </style>
+    <!-- Configuração da fonte Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Container para o fundo de estrelas (adicionado para o efeito) -->
+    <div class="stars-container"></div>
+
+    <!-- Container principal do Linktree -->
+    <div id="linktree-container" class="text-center">
+
+    <!-- Imagem de Perfil (otimizada) -->
     <!--
-    A different snowfall    
-    <script  src="assets/js/snowfall.js"></script>
+        Instrução: coloque a foto em anexo dentro da pasta `images/` com os nomes abaixo.
+        - images/profile-144.jpg  (144x144, JPEG fallback)
+        - images/profile-288.jpg  (288x288, 2x raster)
+        - images/profile-144.webp (144x144, WebP)
+        - images/profile-288.webp (288x288, WebP 2x)
+        Se preferir, mantenha apenas o JPEG e WebP de maior resolução; o navegador escolherá a melhor fonte.
     -->
+    <!-- Preload recomendado para melhorar LCP (descomente se você realmente colocar o arquivo em images/) -->
+    <!-- <link rel="preload" as="image" href="images/profile-144.webp" type="image/webp"> -->
+
+    <picture>
+        <!-- WebP (preferido quando suportado) -->
+        <source type="image/webp"
+            srcset="images/profile-288.webp 288w, images/profile-144.webp 144w"
+            sizes="(min-width: 768px) 144px, 112px">
+
+        <!-- JPEG fallback -->
+        <source type="image/jpeg"
+            srcset="images/profile-288.jpg 288w, images/profile-144.jpg 144w"
+            sizes="(min-width: 768px) 144px, 112px">
+
+        <!-- Imagem principal com atributos de performance -->
+        <img id="profile-pic"
+         class="profile-image w-28 h-28 md:w-36 md:h-36 rounded-full mx-auto object-cover border-4 border-white"
+         src="images/profile-144.jpg"
+         srcset="images/profile-288.jpg 2x, images/profile-144.jpg 1x"
+         alt="Foto de Perfil de Victor"
+         width="144" height="144"
+         loading="lazy"
+         decoding="async"
+         onerror="this.onerror=null;this.src='https://placehold.co/144x144/262626/ffffff?text=V';">
+    </picture>
+
+        <!-- Nome de Usuário -->
+        <h1 class="text-3xl font-extrabold mt-4 text-white">Victor Moreira</h1>
+
+        <!-- Bio / Descrição Curta -->
+        <p class="text-lg text-gray-300 mb-8 mt-2">
+            Professor de Design
+        </p>
+
+        <!-- Container para os links dinâmicos -->
+        <div id="links-container" class="space-y-4">
+            <!-- Os botões de link serão inseridos aqui pelo JavaScript -->
+        </div>
+
+        <!-- Rodapé com links de Redes Sociais e menção de autoria -->
+        <footer class="mt-12 text-center">
+            
+            <!-- Linha de Ícones de Redes Sociais com estilo TITULO_PADRAO (Cinza/Branco) -->
+            <div class="flex justify-center space-x-6 mb-4">
+                <!-- Facebook -->
+                <a href="https://www.facebook.com/victoremmoreira/" target="_blank" rel="noopener noreferrer" 
+                   title="Facebook" 
+                   class="text-gray-400 hover:text-white transition duration-200">
+                    <i class="fa-brands fa-square-facebook text-3xl"></i>
+                </a>
+                <!-- Instagram -->
+                <a href="https://www.instagram.com/profvictormoreira/" target="_blank" rel="noopener noreferrer" 
+                   title="Instagram" 
+                   class="text-gray-400 hover:text-white transition duration-200">
+                    <i class="fa-brands fa-square-instagram text-3xl"></i>
+                </a>
+                <!-- Youtube -->
+                <a href="https://www.youtube.com/@prof.victor" target="_blank" rel="noopener noreferrer" 
+                   title="Youtube" 
+                   class="text-gray-400 hover:text-white transition duration-200">
+                    <i class="fa-brands fa-square-youtube text-3xl"></i>
+                </a>
+                <!-- Linkedin -->
+                <a href="https://www.linkedin.com/in/victoremmoreira/" target="_blank" rel="noopener noreferrer" 
+                   title="LinkedIn" 
+                   class="text-gray-400 hover:text-white transition duration-200">
+                    <i class="fa-brands fa-linkedin text-3xl"></i>
+                </a>
+                <!-- Lattes (Ícone Acadêmico) -->
+                <a href="http://lattes.cnpq.br/4253795392432161" target="_blank" rel="noopener noreferrer" 
+                   title="Currículo Lattes" 
+                   class="text-gray-400 hover:text-white transition duration-200">
+                    <i class="fa-solid fa-graduation-cap text-3xl"></i>
+                </a>
+            </div>
+
+            <!-- Menção de Autoria -->
+            <p class="text-xs font-semibold text-gray-500 mt-2">
+                Feito por <span class="text-green-400">Victor E. Moreira</span>
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        // Definição das classes base para cada tipo de botão
+        const BUTTON_CLASSES = {
+            // 1. Botão de Rede Social: Fundo cinza escuro
+            REDE_SOCIAL: 'link-redesocial text-white', 
+            
+            // 2. Botão de Link Título Padrão: Preto padrão
+            TITULO_PADRAO: 'bg-black text-white', 
+            
+            // 3. Botão de Link Título Grande: Destaque azul
+            TITULO_GRANDE: 'link-titulo-grande text-white', 
+            
+            // 4. Botão de Link Título Destaque: Destaque verde
+            TITULO_DESTAQUE: 'link-titulo-destaque text-black', 
+            
+            // 5. Botão de Link Título Destaque com foto: Destaque verde + estrutura de foto
+            TITULO_DESTAQUE_FOTO: 'link-titulo-destaque link-com-foto text-black', 
+            
+            // 6. Botão de Link Título Especial: Brilho e movimento
+            TITULO_ESPECIAL: 'link-titulo-especial link-com-foto text-magenta-400',
+        };
+
+        // Array de objetos com os dados dos seus links, utilizando os novos 'types'
+        const linkData = [
+            // -----------------------------------------------------------
+            // LINKS DE DESTAQUE (Topo da Lista)
+            // -----------------------------------------------------------
+            {
+                name: "📝 Questionário de Perfil do Jogador",
+                url: "https://forms.gle/9VBKGbYpGg775WJYA",
+                icon: '▶️',
+                type: 'TITULO_DESTAQUE', // Destaque Verde
+            },
+            {
+                name: "📰 Integrative Model of Player Classifications - DatJournal",
+                url: "https://datjournal.com/integrative-model", 
+                icon: '📚',
+                type: 'TITULO_DESTAQUE_FOTO', // ALTERADO PARA DESTAQUE COM FOTO
+                imageUrl: "uploaded:Captura de tela 2025-09-13 172636.png-188cc5d8-9a08-4d6f-8111-f51b7c92c57b", // Imagem da publicação
+                imageAlt: "Capa do Modelo Integrativo das Classificações dos Jogadores"
+            },
+            {
+                name: "📚 Design de jogos analógicos: história, tipos, mecânicas e desenvolvimento",
+                url: "https://a.co/d/fXRc88R",
+                icon: '🎲',
+                type: 'TITULO_DESTAQUE', // Destaque Verde
+            },
+            
+            // Os links de exemplo (TITULO_ESPECIAL e TITULO_DESTAQUE_FOTO) foram removidos.
+        ];
+
+        // Função para construir o HTML dos links
+        function renderLinks() {
+            const container = document.getElementById('links-container');
+            container.innerHTML = ''; 
+
+            linkData.forEach(link => {
+                const anchor = document.createElement('a');
+                anchor.href = link.url;
+                anchor.target = "_blank";
+                anchor.rel = "noopener noreferrer";
+
+                // Pega as classes corretas com base no tipo
+                const buttonTypeClasses = BUTTON_CLASSES[link.type] || BUTTON_CLASSES.TITULO_PADRAO;
+
+                // Adiciona as classes Tailwind para layout
+                anchor.className = `link-button w-full flex items-center justify-center text-center shadow-2xl ${buttonTypeClasses}`;
+                
+                let innerContent = '';
+
+                // Verifica se o link deve ter uma imagem (Tipos 5 e 6)
+                if (link.imageUrl && (link.type === 'TITULO_DESTAQUE_FOTO' || link.type === 'TITULO_ESPECIAL')) {
+                    // Estrutura para link com imagem: Imagem acima do Texto do Link
+                    innerContent = `
+                        <img src="${link.imageUrl}" alt="${link.imageAlt || link.name}" class="mx-auto block" 
+                             onerror="this.onerror=null;this.src='https://placehold.co/400x150/383838/ffffff?text=IMAGEM';">
+                        <span class="font-bold text-center">${link.icon} ${link.name}</span>
+                    `;
+                } else {
+                    // Estrutura para link sem imagem (Tipos 1, 2, 3, 4)
+                    // Note: Aqui mantemos os emojis ou textos originais, pois esta seção não é o rodapé social
+                    innerContent = `
+                        <span class="mr-3 text-2xl">${link.icon.split(' ')[0]}</span>
+                        <span>${link.name}</span>
+                    `;
+                    // Ajusta a classe para garantir que o texto e ícone fiquem lado a lado no centro
+                    anchor.classList.add('flex-row');
+                }
+
+                anchor.innerHTML = innerContent;
+                container.appendChild(anchor);
+            });
+        }
+
+        // Garante que os links sejam renderizados quando a página carregar
+        window.onload = renderLinks;
+        
+    </script>
+
+</body>
 </html>
