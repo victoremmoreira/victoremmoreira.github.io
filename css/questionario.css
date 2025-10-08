@@ -1,0 +1,153 @@
+/* Tailwind CSS compilado e otimizado */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+/* Inclusão das bases e componentes do Tailwind */
+*, ::before, ::after { box-sizing: border-box; border-width: 0; border-style: solid; border-color: #e5e7eb; }
+html { line-height: 1.5; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; -moz-tab-size: 4; tab-size: 4; font-family: Inter, sans-serif; }
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f3f4f6;
+    margin: 0;
+    line-height: inherit;
+}
+
+/* Classes customizadas e utilitários do Tailwind usados no projeto */
+.max-w-3xl { max-width: 48rem; }
+.mx-auto { margin-left: auto; margin-right: auto; }
+.block { display: block; }
+.flex { display: flex; }
+.hidden { display: none; }
+.h-2 { height: 0.5rem; }
+.h-full { height: 100%; }
+.w-full { width: 100%; }
+.flex-1 { flex: 1 1 0%; }
+.transform { transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y)); }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.gap-4 { gap: 1rem; }
+.space-y-1 > :not([hidden]) ~ :not([hidden]) { --tw-space-y-reverse: 0; margin-top: calc(0.25rem * calc(1 - var(--tw-space-y-reverse))); margin-bottom: calc(0.25rem * var(--tw-space-y-reverse)); }
+.space-y-3 > :not([hidden]) ~ :not([hidden]) { --tw-space-y-reverse: 0; margin-top: calc(0.75rem * calc(1 - var(--tw-space-y-reverse))); margin-bottom: calc(0.75rem * var(--tw-space-y-reverse)); }
+.space-y-4 > :not([hidden]) ~ :not([hidden]) { --tw-space-y-reverse: 0; margin-top: calc(1rem * calc(1 - var(--tw-space-y-reverse))); margin-bottom: calc(1rem * var(--tw-space-y-reverse)); }
+.space-y-6 > :not([hidden]) ~ :not([hidden]) { --tw-space-y-reverse: 0; margin-top: calc(1.5rem * calc(1 - var(--tw-space-y-reverse))); margin-bottom: calc(1.5rem * var(--tw-space-y-reverse)); }
+.space-y-8 > :not([hidden]) ~ :not([hidden]) { --tw-space-y-reverse: 0; margin-top: calc(2rem * calc(1 - var(--tw-space-y-reverse))); margin-bottom: calc(2rem * var(--tw-space-y-reverse)); }
+.rounded-full { border-radius: 9999px; }
+.rounded-lg { border-radius: 0.5rem; }
+.rounded-xl { border-radius: 0.75rem; }
+.border { border-width: 1px; }
+.border-2 { border-width: 2px; }
+.border-t { border-top-width: 1px; }
+.border-t-4 { border-top-width: 4px; }
+.border-gray-200 { border-color: #e5e7eb; }
+.border-gray-300 { border-color: #d1d5db; }
+.border-indigo-200 { border-color: #c7d2fe; }
+.border-indigo-500 { border-color: #6366f1; }
+.border-red-400 { border-color: #f87171; }
+.border-red-500 { border-color: #ef4444; }
+.bg-gray-200 { background-color: #e5e7eb; }
+.bg-gray-400 { background-color: #9ca3af; }
+.bg-indigo-50 { background-color: #eef2ff; }
+.bg-indigo-600 { background-color: #4f46e5; }
+.bg-red-100 { background-color: #fee2e2; }
+.bg-white { background-color: #fff; }
+.p-3 { padding: 0.75rem; }
+.p-4 { padding: 1rem; }
+.p-6 { padding: 1.5rem; }
+.px-4 { padding-left: 1rem; padding-right: 1rem; }
+.py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+.pt-4 { padding-top: 1rem; }
+.pl-4 { padding-left: 1rem; }
+.mb-1 { margin-bottom: 0.25rem; }
+.mb-4 { margin-bottom: 1rem; }
+.mb-6 { margin-bottom: 1.5rem; }
+.mb-8 { margin-bottom: 2rem; }
+.mr-2 { margin-right: 0.5rem; }
+.mt-4 { margin-top: 1rem; }
+.mt-6 { margin-top: 1.5rem; }
+.mt-8 { margin-top: 2rem; }
+.mt-12 { margin-top: 3rem; }
+.text-center { text-align: center; }
+.text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+.text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+.text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+.text-2xl { font-size: 1.5rem; line-height: 2rem; }
+.font-bold { font-weight: 700; }
+.font-medium { font-weight: 500; }
+.font-semibold { font-weight: 600; }
+.underline { text-decoration-line: underline; }
+.text-blue-700 { color: #1d4ed8; }
+.text-gray-600 { color: #4b5563; }
+.text-gray-700 { color: #374151; }
+.text-gray-800 { color: #1f2937; }
+.text-green-700 { color: #15803d; }
+.text-indigo-600 { color: #4f46e5; }
+.text-indigo-800 { color: #3730a3; }
+.text-red-500 { color: #ef4444; }
+.text-red-700 { color: #b91c1c; }
+.text-white { color: #fff; }
+.text-yellow-700 { color: #a16207; }
+.shadow-md { box-shadow: 0 4px 6px -1px rgba(0,0,0,.1), 0 2px 4px -2px rgba(0,0,0,.1); }
+.shadow-inner { box-shadow: inset 0 2px 4px 0 rgba(0,0,0,.05); }
+.shadow-2xl { box-shadow: 0 25px 50px -12px rgba(0,0,0,.25); }
+.list-none { list-style-type: none; }
+.transition { transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-backdrop-filter; transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter; transition-timing-function: cubic-bezier(.4,0,.2,1); transition-duration: .15s; }
+.transition-all { transition-property: all; transition-timing-function: cubic-bezier(.4,0,.2,1); transition-duration: .15s; }
+.duration-150 { transition-duration: .15s; }
+.duration-200 { transition-duration: .2s; }
+.duration-500 { transition-duration: .5s; }
+.ease-out { transition-timing-function: cubic-bezier(0,0,.2,1); }
+.hover\:bg-gray-500:hover { background-color: #6b7280; }
+.hover\:bg-indigo-700:hover { background-color: #4338ca; }
+.hover\:text-indigo-800:hover { color: #3730a3; }
+.focus\:border-indigo-500:focus { border-color: #6366f1; }
+.focus\:ring-indigo-500:focus { --tw-ring-color: #6366f1; --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color); --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color); box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000); }
+.md\:p-8 { padding: 2rem; }
+.md\:p-10 { padding: 2.5rem; }
+.md\:flex-row { flex-direction: row; }
+
+/* Estilos customizados que não são do Tailwind */
+#app-title {
+    text-align: center;
+    font-size: 38px;
+    color: #2B2B2B;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+.profile-option {
+    position: relative; /* Necessário para posicionar o ícone de check */
+    cursor: pointer;
+    transition: all 0.2s; /* Mantido para suavidade */
+}
+.disabled-button {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Novo estilo para a resposta selecionada */
+input[type="radio"]:checked + .profile-option {
+    border-color: #22c55e; /* green-500 */
+    background-color: #f0fdf4; /* green-50 */
+    box-shadow: 0 4px 14px 0 rgba(34, 197, 94, 0.15);
+}
+
+/* Estilo para o ícone de check */
+input[type="radio"]:checked + .profile-option .check-icon {
+    opacity: 1; /* Torna o ícone visível */
+}
+
+.check-icon {
+    position: absolute;
+    top: 0.5rem; /* 8px */
+    right: 0.5rem; /* 8px */
+    width: 1.5rem; /* 24px */
+    height: 1.5rem; /* 24px */
+    background-color: #22c55e; /* green-500 */
+    color: white;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0; /* Oculto por padrão */
+    transition: opacity 0.2s ease-in-out;
+    pointer-events: none; /* Garante que o ícone não interfira no clique */
+}

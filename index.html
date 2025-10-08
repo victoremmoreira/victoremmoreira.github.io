@@ -8,8 +8,11 @@
     <!-- Carrega CSS minimalista local (melhor para performance que grandes CDNs quando o site é pequeno) -->
     <link rel="preload" href="css/styles.min.css" as="style">
     <link rel="stylesheet" href="css/styles.min.css">
-    <!-- Configuração da fonte Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <!-- Otimização de Carregamento de Fonte: Pré-conecta aos servidores do Google -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Carrega a fonte de forma não-bloqueante -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" media="print" onload="this.media='all'">
 </head>
 <body>
 
