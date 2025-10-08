@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz de Design Emocional</title>
+    <!-- Carregando Tailwind CSS para estilização moderna e responsiva -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Configuração do Tailwind para usar a fonte Inter e cores personalizadas -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        // Nova paleta emocional
+                        'emotion-purple': '#6d28d9', // Roxo Profundo para botões padrão
+                        'emotion-pink': '#ec4899',   // Rosa Vibrante para Destaque/Título
+                        'emotion-green-light': '#a3e635', // Verde Limão/Certo
+                        'emotion-red': '#f87171',    // Vermelho/Errado
+                        'emotion-yellow': '#facc15', // Amarelo para Timer
+                        'bg-dark': '#111827',        // Fundo muito escuro
+                        'card-bg-base': 'rgba(31, 41, 55, 0.9)', // Fundo do card com opacidade
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Estilos personalizados para a sensação de jogo */
+        body {
+            background-color: #1f2937; /* Fundo escuro */
+            background-image: radial-gradient(circle at center, #1f2937 0%, #111827 100%);
+            color: white;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: auto; 
+            height: auto;
+            overflow-y: auto; 
+            padding: 20px;
+            position: relative; 
+            overflow-x: hidden;
+        }
+        .quiz-card {
+            max-width: 600px; 
+            width: 100%;
+            /* Fundo semi-transparente e filtro de desfoque */
+            background-color: var(--tw-colors-card-bg-base); 
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.7);
+            animation: fadeIn 0.5s ease-out;
+            border: 2px solid var(--tw-colors-emotion-purple); 
+            z-index: 10; 
+            position: relative; 
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .option-button {
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            border: 1px solid transparent;
+            background-image: linear-gradient(to right, #6d28d9, #8b5cf6); /* Gradiente roxo */
+        }
+        .option-button:hover:not(.disabled):not(.correct):not(.incorrect) {
+            transform: scale(1.02);
+            box-shadow: 0 6px 15px rgba(236, 72, 153, 0.5); /* Sombra rosa suave */
+            border: 1px solid var(--tw-colors-emotion-pink);
+        }
+        .correct {
+            background-image: linear-gradient(to right, #a3e635, #84cc16) !important; /* Verde Limão/Luz */
+            box-shadow: 0 0 15px #a3e635;
+            color: #1f2937 !important; /* Texto escuro no acerto */
+            font-weight: bold;
+        }
+        .incorrect {
+            background-image: linear-gradient(to right, #f87171, #ef4444) !important; /* Vermelho */
+            box-shadow: 0 0 15px #f87171;
+        }
+        /* Estilo da barra de progresso do timer */
+        #time-progress {
+            height: 8px;
+            background-color: var(--tw-colors-emotion-yellow); /* Amarelo */
+            transition: width linear;
+        }
+        input[type="text"], input[type="email"] {
+            background-color: #4b5563; /* Cinza escuro para campos */
+            color: white;
+            border: 1px solid var(--tw-colors-emotion-purple);
+            padding: 10px;
+            border-radius: 12px;
+        }
+
+        /* ESTILO: Emojis de Fundo Dinâmicos */
+        .emoji-background span {
+            position: absolute;
+            font-size: 8rem; /* Emojis grandes */
+            opacity: 0.15; /* MAIS APARENTE */
+            pointer-events: none; 
+            transform: rotate(var(--rotation)) scale(var(--scale));
+            transition: opacity 1s;
+            z-index: 0;
+            user-select: none;
+        }
+        .emoji-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 1; 
+        }
+
+    </style>
+</head>
+<body>
+    <!-- Container que será preenchido dinamicamente com Emojis -->
+    <div id="emoji-background" class="emoji-background">
+        <!-- Emojis serão inseridos aqui pelo JavaScript -->
+    </div>
+    <!-- FIM DO CONTAINER DOS EMOJIS -->
+
+    <div id="quiz-container" class="quiz-card p-6 md:p-8 rounded-2xl">
+        <h1 class="text-3xl md:text-4xl font-extrabold text-emotion-pink mb-6 text-center tracking-wider">
+            QUIZ: DESIGN EMOCIONAL
+        </h1>
+        
+        <!-- Conteúdo do Quiz será injetado aqui -->
+        <div id="quiz-content">
+            <p class="text-center text-lg text-gray-300">Carregando...</p>
+        </div>
+
+    </div>
+
+    <script>
+        // --- CONFIGURAÇÕES E DADOS DO QUIZ ---
+        const TIME_LIMIT = 20; // Tempo limite em segundos por questão
+        const QUESTIONS_PER_ROUND = 10; // Número de perguntas por tentativa
+        const BASE_SCORE_CORRECT = 10; // Pontuação base por acerto
+        
+        // !!! VARIÁVEL CRÍTICA: URL DO GOOGLE APPS SCRIPT ATUALIZADO !!!
+        const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx7iwxyjTkMuatVYBi3xK0YNpBjmSRrqf623_u3YGW0t_UGtbKiuu7tJImU_A2ECVHQ/exec"; 
+
+        // Lista de Emojis de Emoções para o fundo
+        const EMOTIONS_EMOJIS = [
+            '😊', '🥳', '😳', '😨', '🥰', '😍', '🤔', '😟', 
+            '😂', '😭', '😡', '😱', '😇', '😴', '😤', '🤩'
+        ];
+
+        let timerInterval;
+        let userData = {
+            name: '',
+            email: '',
+            startTime: null,
+            endTime: null
+        };
+        // Variáveis de estado globais
+        let currentQuizQuestions = []; 
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let answered = false;
+        let timeLeft = TIME_LIMIT;
+        let resultsHistory = []; // Novo array para registrar as respostas
+        const quizContent = document.getElementById('quiz-content');
+        const emojiBackgroundContainer = document.getElementById('emoji-background');
+
+
+        /**
+         * Gera e insere emojis aleatórios no fundo do body.
+         */
+        function generateDynamicEmojiBackground() {
+            const numEmojis = 8;
+            emojiBackgroundContainer.innerHTML = ''; // Limpa antes de gerar
+
+            // Sorteia 8 emojis da lista
+            const shuffledEmojis = [...EMOTIONS_EMOJIS].sort(() => 0.5 - Math.random()).slice(0, numEmojis);
+
+            shuffledEmojis.forEach(emoji => {
+                // Posições aleatórias (em %)
+                const top = Math.random() * 90; 
+                const left = Math.random() * 90;
+                // Rotação e escala aleatórias
+                const rotation = Math.random() * 90 - 45; // Entre -45deg e 45deg
+                const scale = 0.8 + Math.random() * 0.5; // Entre 0.8 e 1.3
+
+                const span = document.createElement('span');
+                span.textContent = emoji;
+                span.style.top = `${top}%`;
+                span.style.left = `${left}%`;
+                span.style.setProperty('--rotation', `${rotation}deg`);
+                span.style.setProperty('--scale', scale);
+
+                emojiBackgroundContainer.appendChild(span);
+            });
+        }
+
+        // Dados do Quiz: DESIGN EMOCIONAL (22 questões) - ATUALIZADO
+        const quizData = [
+            {
+                question: "De acordo com Donald Norman, qual nível lida primariamente com a reação sensorial automática, e qual se constrói sobre autoimagem, memória e valores?",
+                answerOptions: [
+                    { text: "Reflexivo e Visceral.", isCorrect: false },
+                    { text: "Comportamental e Reflexivo.", isCorrect: false },
+                    { text: "Visceral e Comportamental.", isCorrect: false },
+                    { text: "Visceral e Reflexivo.", isCorrect: true }
+                ]
+            },
+            {
+                question: "Norman diferencia a atratividade e a beleza percebida como manifestações de quais níveis, respectivamente?",
+                answerOptions: [
+                    { text: "Nível Comportamental e Nível Visceral.", isCorrect: false },
+                    { text: "Nível Visceral e Nível Reflexivo.", isCorrect: true },
+                    { text: "Nível Reflexivo e Nível Comportamental.", isCorrect: false },
+                    { text: "Nível Ideológico e Nível Psicológico.", isCorrect: false }
+                ]
+            },
+            {
+                question: "Qual a distinção crucial entre Emoção e Sentimento em termos de duração, segundo o material?",
+                answerOptions: [
+                    { text: "Emoção tem longa duração; Sentimento é agudo.", isCorrect: false },
+                    { text: "Emoção é aguda e intencional; Sentimento tem longa duração.", isCorrect: true },
+                    { text: "Emoção é cognitiva; Sentimento é automático.", isCorrect: false },
+                    { text: "Sentimento depende da aprendizagem; Emoção é inata", isCorrect: false }
+                ]
+            },
+            {
+                question: "O que distingue uma emoção de um sentimento, conforme a classificação dos estados afetivos?",
+                answerOptions: [
+                    { text: "Ser um estado afetivo involuntário e de longa duração.", isCorrect: false },
+                    { text: "Ser intencional e possuir duração aguda (momentânea).", isCorrect: true },
+                    { text: "Ser resultado de um esforço físico intenso (emoção de fundo).", isCorrect: false },
+                    { text: "Estar ligada exclusivamente à predisposição positiva ou negativa.", isCorrect: false }
+                ]
+            },
+            {
+                question: "Na classificação de Patrick Jordan, qual prazer se refere à satisfação alicerçada na mente, incluindo a facilidade de execução e finalização de tarefas e estados de relaxamento?",
+                answerOptions: [
+                    { text: "Prazer Fisiológico.", isCorrect: false },
+                    { text: "Prazer Ideológico.", isCorrect: false },
+                    { text: "Prazer Social.", isCorrect: false },
+                    { text: "Prazer Psicológico.", isCorrect: true }
+                ]
+            },
+            {
+                question: "Qual técnica desenvolvida por Patrick Jordan permite avaliar a projeção de características humanas nos produtos, tratando-os como \"objetos vivos\"?",
+                answerOptions: [
+                    { text: "Escala Diferencial de Emoções.", isCorrect: false },
+                    { text: "Mapas Colaborativos.", isCorrect: false },
+                    { text: "Atribuição de Personalidade do Produto (PPA).", isCorrect: true },
+                    { text: "Modelo Circumplexo de Russell.", isCorrect: false }
+                ]
+            },
+            {
+                question: "No modelo de Pieter Desmet, quais são as duas variáveis cognitivas essenciais que, ao interagirem, resultam na emoção?",
+                answerOptions: [
+                    { text: "Nível Visceral do usuário e Usabilidade do Produto.", isCorrect: false },
+                    { text: "Preocupações (Concerns) e Características do Produto.", isCorrect: true },
+                    { text: "Prazer e Desprazer do modelo circumplexo.", isCorrect: false },
+                    { text: "Ativação/Desativação e Emoções de Fundo.", isCorrect: false }
+                ]
+            },
+            {
+                question: "Em qual modelo dimensional das emoções se baseia a ferramenta Emocards, desenvolvida por Pieter Desmet e colaboradores, utilizando eixos de valores positivos ou negativos?",
+                answerOptions: [
+                    { text: "O modelo de Ativação e Desativação de Lazarus.", isCorrect: false },
+                    { text: "Escala Diferencial de Emoções.", isCorrect: false },
+                    { text: "O modelo circumplexo de Russell (Ativação/Desativação e Prazer/Desprazer).", isCorrect: true },
+                    { text: "A Pirâmide de Maslow.", isCorrect: false }
+                ]
+            },
+            {
+                question: "Segundo Desmet e Pohlmeyer, quais são os três componentes do bem-estar centrais no Positive Design?",
+                answerOptions: [
+                    { text: "Visceral, Comportamental e Reflexivo", isCorrect: false },
+                    { text: "Funcionalidade, Usabilidade e Estética", isCorrect: false },
+                    { text: "Felicidade, Bem-estar e Positivismo", isCorrect: false },
+                    { text: "Prazer, Significado (Pessoal) e Virtude", isCorrect: true }
+                ]
+            },
+            {
+                question: "Qual estágio de Piaget (entre 2 e 7 anos) é caracterizado pelo surgimento da função simbólica (semiótica) e da linguagem?",
+                answerOptions: [
+                    { text: "Estágio Sensório-motor (0 a 2 anos)", isCorrect: false },
+                    { text: "Estágio Operatório Concreto (7 a 12 anos)", isCorrect: false },
+                    { text: "Estágio das Operações Formais (a partir de 12 anos)", isCorrect: false },
+                    { text: "Estágio Pré-operatório (entre 2 e 7 anos)", isCorrect: true }
+                ]
+            },
+            {
+                question: "Qual divisão do sistema nervoso autônomo é responsável por gerar respostas emocionais no trato gastrointestinal, influenciando humor e ansiedade, sendo chamado de \"segundo cérebro\"?",
+                answerOptions: [
+                    { text: "Sistema Nervoso Simpático.", isCorrect: false },
+                    { text: "Sistema Nervoso Central.", isCorrect: false },
+                    { text: "Sistema Nervoso Entérico.", isCorrect: true },
+                    { text: "Sistema Nervoso Parassimpático.", isCorrect: false }
+                ]
+            },
+            {
+                question: "Qual receptor tátil é especificamente responsável por captar as sensações térmicas de frio?",
+                answerOptions: [
+                    { text: "Receptores de Ruffini.", isCorrect: false },
+                    { text: "Discos de Merkel.", isCorrect: false },
+                    { text: "Terminação nervosa livre.", isCorrect: false },
+                    { text: "Receptores de Krause.", isCorrect: true }
+                ]
+            },
+            {
+                question: "Ao projetar uma peça de vestuário, quais são os três sentidos que o designer deve considerar como cruciais para a experiência do usuário, antes mesmo do uso efetivo?",
+                answerOptions: [
+                    { text: "Paladar, Olfato e Audição.", isCorrect: false },
+                    { text: "Visão, Tato e Olfato.", isCorrect: true },
+                    { text: "Visão, Audição e Sinestesia.", isCorrect: false },
+                    { text: "Tato, Gosto e Sinestesia.", isCorrect: false }
+                ]
+            },
+            {
+                question: "O nível visceral de Norman está primariamente ligado a qual sistema, regulando reflexos involuntários como pressão sanguínea e digestão?",
+                answerOptions: [
+                    { text: "Sistema Nervoso Central", isCorrect: false },
+                    { text: "Sistema Nervoso Somático", isCorrect: false },
+                    { text: "Sistema Límbico", isCorrect: false },
+                    { text: "Sistema Nervoso Autônomo", isCorrect: true }
+                ]
+            },
+            {
+                question: "Qual é o resultado esperado da aplicação da técnica de Cartões de Inspiração (Ideo Cards)?",
+                answerOptions: [
+                    { text: "A tabulação estatística das emoções primárias.", isCorrect: false },
+                    { text: "O registro dos comentários e insights dos usuários potenciais sobre a situação estimulada.", isCorrect: true },
+                    { text: "A elaboração de um Termo de Consentimento Livre e Esclarecido.", isCorrect: false },
+                    { text: "A criação de um protótipo interativo de alto custo.", isCorrect: false }
+                ]
+            },
+            {
+                question: "Qual é a principal aplicação dos arquétipos de Jung na estratégia de design emocional?",
+                answerOptions: [
+                    { text: "Determinar o ritmo de filmes (linguagem corporal).", isCorrect: false },
+                    { text: "Avaliar o nível visceral de reação a novas tecnologias.", isCorrect: false },
+                    { text: "Revelar pensamentos inconscientes e posicionar a marca pelos significados atribuídos.", isCorrect: true },
+                    { text: "Mapear exclusivamente os prazeres fisiológicos.", isCorrect: false }
+                ]
+            },
+            {
+                question: "Qual estágio do desenvolvimento cognitivo infantil, segundo Piaget, é marcado pelo surgimento de esquemas internos abstratos como reversibilidade e seriação?",
+                answerOptions: [
+                    { text: "Estágio Sensório-motor", isCorrect: false },
+                    { text: "Estágio Pré-operatório", isCorrect: false },
+                    { text: "Estágio Operatório Concreto", isCorrect: true },
+                    { text: "Estágio das Operações Formais", isCorrect: false }
+                ]
+            },
+            {
+                question: "Na classificação das funções de Löbach, qual função se relaciona aos contextos espirituais, sociais e culturais, envolvendo valores e conceitos formados pelos grupos?",
+                answerOptions: [
+                    { text: "Função Prática.", isCorrect: false },
+                    { text: "Função Estética.", isCorrect: false },
+                    { text: "Função Simbólica.", isCorrect: true },
+                    { text: "Função Psicológica.", isCorrect: false }
+                ]
+            },
+            {
+                question: "Ao projetar para o estágio sensório-motor, qual nível do Design Emocional de Norman é predominantemente ativado devido à importância da verificação sensorial?",
+                answerOptions: [
+                    { text: "Nível Reflexivo.", isCorrect: false },
+                    { text: "Nível Comportamental.", isCorrect: false },
+                    { text: "Nível Visceral.", isCorrect: true },
+                    { text: "Nível Operatório.", isCorrect: false }
+                ]
+            },
+            {
+                question: "No modelo circumplexo de emoções de Russell (1980), qual combinação de valores (Prazer/Desprazer e Ativação/Desativação) reflete a emoção \"tristeza\"?",
+                answerOptions: [
+                    { text: "Prazer positivo e Ativação positiva", isCorrect: false },
+                    { text: "Prazer positivo e Ativação negativa", isCorrect: false },
+                    { text: "Prazer negativo e Ativação positiva", isCorrect: false },
+                    { text: "Prazer negativo e Ativação negativa", isCorrect: true }
+                ]
+            },
+            {
+                question: "A Função Simbólica de Löbach está primariamente ligada a quais contextos na relação do usuário com o produto?",
+                answerOptions: [
+                    { text: "Apenas aos aspectos fisiológicos no uso prático", isCorrect: false },
+                    { text: "Exclusivamente à apreciação estética multisensorial", isCorrect: false },
+                    { text: "Contextos espirituais, psíquicos, sociais e culturais", isCorrect: true },
+                    { text: "Exclusivamente à comunicação explícita de instruções", isCorrect: false }
+                ]
+            },
+            {
+                question: "Qual componente do Positive Design se relaciona ao desenvolvimento pessoal e ao conceito de \"tornar-se uma boa pessoa\"?",
+                answerOptions: [
+                    { text: "Prazer", isCorrect: false },
+                    { text: "Significado Pessoal", isCorrect: false },
+                    { text: "Virtude", isCorrect: true },
+                    { text: "Bem-Estar Subjetivo", isCorrect: false }
+                ]
+            }
+        ];
+
+        // --- FUNÇÕES DE LÓGICA DO QUIZ ---
+
+        /**
+         * Seleciona e embaralha 10 perguntas aleatórias para a rodada.
+         * @returns {Array} As 10 questões selecionadas.
+         */
+        function getShuffledQuestions() {
+            // Cria uma cópia do array de dados e embaralha
+            let array = [...quizData];
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            // Retorna apenas as primeiras 10
+            return array.slice(0, QUESTIONS_PER_ROUND);
+        }
+
+        /**
+         * Inicia o quiz após a coleta de dados do usuário.
+         */
+        function startQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            resultsHistory = []; // Limpa o histórico a cada novo quiz
+            currentQuizQuestions = getShuffledQuestions(); // Sorteia 10 perguntas
+            userData.startTime = new Date();
+            renderQuestion();
+        }
+
+
+        /**
+         * Inicia ou reseta o timer para a questão atual.
+         */
+        function startTimer() {
+            clearInterval(timerInterval);
+            timeLeft = TIME_LIMIT;
+            const progressElement = document.getElementById('time-progress');
+            const timerDisplay = document.getElementById('timer-display');
+
+            if (progressElement) {
+                // Reinicia a barra de progresso visualmente
+                progressElement.style.width = '100%';
+                progressElement.style.transitionDuration = '0s';
+                
+                // Força o reflow para garantir que a barra está em 100% antes de iniciar a transição
+                void progressElement.offsetWidth; 
+                
+                // Inicia a animação de regressão em 20 segundos
+                progressElement.style.transitionDuration = `${TIME_LIMIT}s`;
+                progressElement.style.width = '0%';
+            }
+            
+            if(timerDisplay) timerDisplay.textContent = timeLeft;
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                if(timerDisplay) timerDisplay.textContent = timeLeft;
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    handleTimeOut();
+                }
+            }, 1000);
+        }
+
+        /**
+         * Lida com o esgotamento do tempo (Time Out).
+         */
+        function handleTimeOut() {
+            if (answered) return; // Não faz nada se já tiver respondido
+            
+            answered = true;
+            
+            // 1. REGISTRA A RESPOSTA (TEMPO ESGOTADO)
+            const currentQ = currentQuizQuestions[currentQuestionIndex];
+            resultsHistory.push({
+                question: currentQ.question,
+                userAnswer: 'Tempo Esgotado',
+                isCorrect: false
+            });
+
+            const feedbackDiv = document.getElementById('feedback');
+            const buttons = document.querySelectorAll('.option-button');
+
+            // Desativa botões e mostra feedback de tempo esgotado
+            buttons.forEach(btn => {
+                btn.classList.add('disabled');
+                btn.onclick = null;
+                btn.classList.remove('hover:bg-indigo-600');
+                if (btn.dataset.correct === 'true') {
+                    btn.classList.add('correct'); // Mostra a resposta correta
+                    btn.classList.remove('bg-trivia-blue');
+                }
+            });
+
+            // Feedback: 0 Pontos
+            feedbackDiv.textContent = 'TEMPO ESGOTADO! ⏱️ (0 Pontos)';
+            feedbackDiv.classList.remove('hidden', 'bg-emotion-green-light', 'bg-emotion-red');
+            feedbackDiv.classList.add('bg-gray-600'); 
+
+            // Avança automaticamente após um pequeno delay para o usuário ver o feedback (2 segundos)
+            setTimeout(nextQuestion, 2000); 
+        }
+
+        /**
+         * Renderiza a pergunta atual na tela.
+         */
+        function renderQuestion() {
+            clearInterval(timerInterval); 
+
+            if (currentQuestionIndex >= currentQuizQuestions.length) {
+                showScore();
+                return;
+            }
+
+            answered = false;
+            const currentQ = currentQuizQuestions[currentQuestionIndex];
+            const qNum = currentQuestionIndex + 1;
+            const totalQ = currentQuizQuestions.length;
+
+            quizContent.innerHTML = `
+                <div class="mb-6">
+                    <!-- Progresso do Quiz -->
+                    <p class="text-sm font-semibold text-emotion-pink mb-1">Progresso: Questão ${qNum} de ${totalQ}</p>
+                    <div class="w-full bg-gray-600 rounded-full h-2.5 mb-4">
+                        <div class="bg-emotion-pink h-2.5 rounded-full transition-all duration-500" style="width: ${qNum / totalQ * 100}%"></div>
+                    </div>
+                    <!-- Contagem Regressiva do Tempo -->
+                    <div class="flex justify-between items-center mb-1">
+                         <p class="text-xs font-semibold text-emotion-yellow">Tempo Restante:</p>
+                         <span id="timer-display" class="text-sm font-bold text-emotion-yellow">${TIME_LIMIT}</span>
+                    </div>
+                    
+                    <div class="w-full bg-gray-600 rounded-full overflow-hidden h-2">
+                        <div id="time-progress" class="h-2" style="width: 100%;"></div>
+                    </div>
+                </div>
+
+                <h2 class="text-xl md:text-2xl font-bold mb-8 p-4 bg-gray-700 rounded-xl shadow-inner border border-emotion-purple">
+                    ${currentQ.question}
+                </h2>
+
+                <div id="options-container" class="space-y-4">
+                    ${currentQ.answerOptions.map((option, index) => `
+                        <button
+                            data-correct="${option.isCorrect}"
+                            data-index="${index}"
+                            class="option-button w-full p-4 rounded-xl text-lg text-left font-medium shadow-md transition-all duration-200 text-white"
+                            onclick="selectAnswer(this)"
+                        >
+                            ${String.fromCharCode(97 + index)}) ${option.text}
+                        </button>
+                    `).join('')}
+                </div>
+
+                <div id="feedback" class="mt-6 p-3 rounded-xl text-center hidden"></div>
+            `;
+            startTimer();
+        }
+
+        /**
+         * Lida com a seleção de uma resposta.
+         * @param {HTMLElement} selectedButton O botão que foi clicado.
+         */
+        function selectAnswer(selectedButton) {
+            if (answered) return;
+            clearInterval(timerInterval); // Para o timer imediatamente
+            answered = true;
+
+            const isCorrect = selectedButton.dataset.correct === 'true';
+            const buttons = document.querySelectorAll('.option-button');
+            const feedbackDiv = document.getElementById('feedback');
+            const progressElement = document.getElementById('time-progress');
+            
+            // Pausa a animação da barra
+            if(progressElement) progressElement.style.transitionDuration = '0s';
+
+            // 1. REGISTRA A RESPOSTA
+            const currentQ = currentQuizQuestions[currentQuestionIndex];
+            resultsHistory.push({
+                question: currentQ.question,
+                userAnswer: selectedButton.textContent.trim(),
+                isCorrect: isCorrect
+            });
+
+
+            // Desativa todos os botões após a resposta
+            buttons.forEach(btn => {
+                btn.classList.add('disabled');
+                btn.onclick = null; // Remove o evento de clique
+                btn.classList.remove('hover:bg-indigo-600');
+                
+                // Realça a resposta correta e a resposta do usuário
+                if (btn.dataset.correct === 'true') {
+                    btn.classList.add('correct');
+                    btn.style.backgroundImage = 'none'; // Remove o gradiente padrão
+                } else if (btn === selectedButton && !isCorrect) {
+                    btn.classList.add('incorrect');
+                    btn.style.backgroundImage = 'none'; // Remove o gradiente padrão
+                }
+            });
+
+            let feedbackText = '';
+            
+            // LÓGICA DE PONTUAÇÃO AJUSTADA
+            if (isCorrect) {
+                const pointsGained = BASE_SCORE_CORRECT + timeLeft;
+                score += pointsGained;
+                feedbackText = `RESPOSTA CORRETA! 🎉 (+${pointsGained} Pontos)`;
+                feedbackDiv.classList.remove('hidden', 'bg-emotion-red', 'bg-gray-600');
+                feedbackDiv.classList.add('bg-emotion-green-light', 'text-gray-900', 'font-bold');
+            } else {
+                // Resposta Incorreta = 0 pontos.
+                feedbackText = 'Resposta Incorreta. 😥 (0 Pontos)';
+                feedbackDiv.classList.remove('hidden', 'bg-emotion-green-light', 'bg-gray-600');
+                feedbackDiv.classList.add('bg-emotion-red');
+            }
+
+            feedbackDiv.textContent = feedbackText;
+            
+            // Avança automaticamente após um pequeno delay para o usuário ver o feedback (1.5 segundos)
+            setTimeout(nextQuestion, 1500); 
+        }
+
+        /**
+         * Avança para a próxima questão.
+         */
+        function nextQuestion() {
+            currentQuestionIndex++;
+            renderQuestion();
+        }
+        
+        /**
+         * Renderiza a tela inicial para coleta de dados.
+         */
+        function renderWelcomeScreen() {
+            quizContent.innerHTML = `
+                <div class="text-center py-6">
+                    <h2 class="text-2xl font-bold text-gray-100 mb-2">Bem-vindo(a)!</h2>
+                    <p class="text-md text-gray-300 mb-4">
+                        Teste seus conhecimentos sobre **Design Emocional**.
+                    </p>
+                    <p class="text-sm text-gray-400 mb-8 font-semibold italic">
+                        Serão ${QUESTIONS_PER_ROUND} questões sorteadas. Cada acerto vale ${BASE_SCORE_CORRECT} pontos mais o tempo restante. Seja rápido!
+                    </p>
+
+                    <form id="start-form" class="space-y-4 text-left">
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-gray-300 mb-1">Nome Completo:</label>
+                            <input type="text" id="name" name="name" required class="w-full">
+                        </div>
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-300 mb-1">E-mail:</label>
+                            <input type="email" id="email" name="email" required class="w-full">
+                        </div>
+                        <button
+                            type="submit"
+                            class="w-full p-4 bg-emotion-pink hover:bg-pink-600 rounded-xl text-xl font-bold shadow-xl transition-colors duration-300 mt-6 text-white"
+                        >
+                            Começar o QUIZ
+                        </button>
+                    </form>
+                    <div id="error-message" class="text-emotion-red mt-4 hidden">Por favor, preencha todos os campos.</div>
+                </div>
+            `;
+            
+            document.getElementById('start-form').addEventListener('submit', function(event) {
+                event.preventDefault();
+                const nameInput = document.getElementById('name');
+                const emailInput = document.getElementById('email');
+                const errorMessage = document.getElementById('error-message');
+
+                if (nameInput.value.trim() && emailInput.value.trim()) {
+                    userData.name = nameInput.value.trim();
+                    userData.email = emailInput.value.trim();
+                    
+                    startQuiz(); // Chama a nova função de inicialização
+                } else {
+                    errorMessage.classList.remove('hidden');
+                }
+            });
+        }
+        
+        /**
+         * Envia os resultados do quiz para o Google Apps Script (que por sua vez insere na Planilha).
+         */
+        async function sendDriveResults() {
+            const correctCount = resultsHistory.filter(res => res.isCorrect).length;
+            const totalQ = currentQuizQuestions.length;
+            const timeTaken = ((userData.endTime.getTime() - userData.startTime.getTime()) / 1000).toFixed(0); 
+            const quizDate = new Date().toLocaleString('pt-BR');
+
+            // Formata o histórico de perguntas/respostas em uma string única para facilitar o log na planilha
+            const formattedResults = resultsHistory.map((res, index) => {
+                const status = res.isCorrect ? 'CORRETA' : 'INCORRETA';
+                const correctOption = currentQuizQuestions[index].answerOptions.find(opt => opt.isCorrect).text;
+
+                return `Q${index + 1}: ${status} (R: ${res.userAnswer} | Certa: ${correctOption})`;
+            }).join('; ');
+
+
+            const payload = {
+                date: quizDate,
+                name: userData.name,
+                email: userData.email,
+                score: score,
+                correctCount: correctCount,
+                totalQuestions: totalQ,
+                timeTaken: timeTaken,
+                detailedResults: formattedResults
+            };
+
+            try {
+                const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // Necessário para a comunicação com o Apps Script
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                });
+                // Como usamos 'no-cors', não podemos ler a resposta, mas o fetch deve ser bem-sucedido.
+                console.log('Dados enviados para o Google Apps Script.');
+            } catch (error) {
+                console.error('Falha ao enviar dados para a Planilha:', error);
+                // O usuário verá o feedback na tela mesmo que o envio falhe.
+            }
+        }
+
+
+        /**
+         * Mostra a tela de pontuação final.
+         */
+        function showScore() {
+            clearInterval(timerInterval);
+            userData.endTime = new Date();
+            
+            // 1. Envia os resultados para o Google Drive
+            sendDriveResults();
+
+            const totalQ = currentQuizQuestions.length;
+            const timeTaken = ((userData.endTime.getTime() - userData.startTime.getTime()) / 1000).toFixed(0); // Tempo total em segundos
+            const maxScorePossible = (BASE_SCORE_CORRECT + TIME_LIMIT) * totalQ; 
+
+            let message = '';
+            let emoji = '';
+
+            // Lógica de feedback baseada na pontuação total e quão próximo do máximo
+            if (score === maxScorePossible) {
+                message = 'FENOMENAL! Máxima Pontuação e Velocidade!';
+                emoji = '⚡🧠🏆';
+            } else if (score >= maxScorePossible * 0.8) {
+                message = 'EXCELENTE! Você demonstrou grande entendimento e velocidade.';
+                emoji = '🌟';
+            } else if (score >= maxScorePossible * 0.5) {
+                message = 'ÓTIMO! Bom esforço! Reveja os conceitos para ir além.';
+                emoji = '👍';
+            } else {
+                message = 'Continue estudando! O Design Emocional tem muito a oferecer.';
+                emoji = '🧐';
+            }
+
+            quizContent.innerHTML = `
+                <div class="text-center py-10">
+                    <h2 class="text-4xl font-extrabold text-emotion-pink mb-4">${emoji} FIM DO QUIZ ${emoji}</h2>
+                    
+                    <div class="text-left bg-gray-600 p-6 rounded-xl inline-block mb-6 shadow-lg">
+                        <p class="text-sm font-semibold text-gray-300">Aluno(a): <span class="text-white font-bold">${userData.name}</span></p>
+                        <p class="text-sm font-semibold text-gray-300">E-mail: <span class="text-white font-bold">${userData.email}</span></p>
+                    </div>
+
+                    <p class="text-lg font-semibold text-gray-300">Pontuação Total:</p>
+                    <p class="text-6xl font-black mb-4 text-emotion-green-light">${score}</p>
+                    <p class="text-md text-gray-400 mb-2">Máximo Possível: ${maxScorePossible} pontos</p>
+                    
+                    <p class="text-md text-gray-300 mb-2">Tempo Gasto: <span class="font-bold text-white">${timeTaken} segundos</span></p>
+
+                    <p class="text-2xl font-semibold mb-8">${message}</p>
+                    
+                    <!-- TEXTO DE ENVIO PARA O DRIVE REMOVIDO DAQUI -->
+                    
+                    <button
+                        class="p-4 bg-emotion-pink hover:bg-pink-600 rounded-xl text-xl font-bold shadow-xl transition-colors duration-300"
+                        onclick="restartQuiz()"
+                    >
+                        Tentar Novamente
+                    </button>
+                </div>
+            `;
+        }
+
+        /**
+         * Reinicia o quiz (volta para a tela inicial).
+         */
+        function restartQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            resultsHistory = []; 
+            // Mantém nome/email preenchidos para a próxima tentativa
+            userData = { name: userData.name, email: userData.email, startTime: null, endTime: null }; 
+            generateDynamicEmojiBackground(); // Gera um novo fundo de emojis
+            renderWelcomeScreen();
+        }
+
+        // Inicia o Quiz na tela de boas-vindas e gera o fundo de emojis
+        window.onload = function() {
+            generateDynamicEmojiBackground();
+            renderWelcomeScreen();
+        };
+    </script>
+
+</body>
+</html>
