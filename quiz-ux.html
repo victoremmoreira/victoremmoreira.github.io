@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz de UX Avançado</title>
+    <!-- Carregando Tailwind CSS via CDN (para classes utilitárias) e CSS customizado -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/quiz-ux.css">
+    <!-- Otimização de Carregamento de Fonte -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap">
+</head>
+<body>
+    <!-- Container que será preenchido dinamicamente com Ícones/Emojis UX -->
+    <div id="emoji-background" class="emoji-background">
+        <!-- Ícones serão inseridos aqui pelo JavaScript -->
+    </div>
+
+    <div id="quiz-container" class="quiz-card p-6 md:p-8 rounded-2xl">
+        <h1 class="text-3xl md:text-4xl font-extrabold text-ux-accent mb-6 text-center tracking-wider">
+            QUIZ: UX AVANÇADO
+        </h1>
+
+        <!-- Conteúdo do Quiz será injetado aqui -->
+        <div id="quiz-content">
+            <p class="text-center text-lg text-gray-300">Carregando...</p>
+        </div>
+
+    </div>
+
+    <!-- Carrega as perguntas primeiro, depois a lógica principal do quiz -->
+    <script src="js/quiz-ux-questions.js" defer></script>
+    <script src="js/quiz-ux.js" defer></script>
+
+</body>
+</html>
