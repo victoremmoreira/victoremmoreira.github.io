@@ -2,6 +2,8 @@
 
 Repositório utilizado para organizar e disponibilizar uma lista de links pessoais e profissionais.
 
+> Atualização simples: README ajustado para validar edição automática no repositório.
+
 ## Autor
 
 **Victor Emanuel Montes Moreira**
